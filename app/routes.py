@@ -5,11 +5,15 @@ import threading  # Módulo para rodar threads em paralelo (execução simultân
 from app import app  # Importa a instância 'app' da aplicação Flask.
 import concurrent.futures  # Para execução concorrente de múltiplas tarefas.
 import logging  # Adicionar logging
+from functools import wraps  # Para criar decorators
 from app.config_manager import config_manager  # Importa o gerenciador de configurações.
 from app.device_manager import device_manager  # Importa o gerenciador de dispositivos.
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Token de autenticação para API externa
+API_TOKEN = 'whatsapp_api_token_2025_helpdeskmonitor_tce'
 
 # Dicionário global que armazenará o status dos IPs verificados, por VLAN.
 check_ip = {}
@@ -20,6 +24,30 @@ RAIZ = '/ipmonitor'
 # Variável global para controlar o loop de verificação
 background_thread = None
 should_stop = False
+
+# Decorator para validar Bearer Token
+def require_api_token(f):
+    """Decorator para validar Bearer Token em endpoints de API externa"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get('Authorization')
+        
+        if not auth_header:
+            return jsonify({'error': 'Token de autenticação não fornecido'}), 401
+        
+        # Verificar se o header está no formato "Bearer <token>"
+        parts = auth_header.split()
+        if len(parts) != 2 or parts[0].lower() != 'bearer':
+            return jsonify({'error': 'Formato de autenticação inválido. Use: Bearer <token>'}), 401
+        
+        token = parts[1]
+        
+        if token != API_TOKEN:
+            return jsonify({'error': 'Token de autenticação inválido'}), 403
+        
+        return f(*args, **kwargs)
+    
+    return decorated_function
 
 # Função que verifica os IPs em uma determinada VLAN em segundo plano.
 # Esta função é chamada pelas threads para rodar verificações assíncronas.
@@ -39,7 +67,70 @@ def background_ip_check(vlan):
     check_ip[vlan] = result
 
 
-'''API ENDPOINTS'''        
+'''API ENDPOINTS'''
+
+# ============================================================
+# API EXTERNA - Requer autenticação Bearer Token
+# ============================================================
+
+@app.route('/api/external/devices/vlan/<int:vlan>', methods=['GET'])
+@app.route(RAIZ + '/api/external/devices/vlan/<int:vlan>', methods=['GET'])
+@require_api_token
+def get_online_devices_by_vlan(vlan):
+    """
+    Retorna dispositivos online de uma VLAN específica com IP, nome e descrição.
+    
+    Autenticação: Bearer Token
+    Header: Authorization: Bearer whatsapp_api_token_2025_helpdeskmonitor_tce
+    
+    Retorna apenas dispositivos que estão online no momento da consulta.
+    """
+    try:
+        # Verificar se a VLAN foi escaneada
+        if vlan not in check_ip:
+            return jsonify({
+                'error': 'VLAN não encontrada ou ainda não escaneada',
+                'vlan': vlan
+            }), 404
+        
+        # Obter status de IPs da VLAN
+        ip_status_list = check_ip[vlan]
+        
+        # Obter dispositivos cadastrados da VLAN
+        devices = device_manager.get_devices_by_vlan(vlan)
+        
+        # Criar um dicionário de dispositivos por IP para fácil acesso
+        device_map = {device['ip']: device for device in devices}
+        
+        # Filtrar apenas dispositivos online e formatar resposta
+        online_devices = []
+        for ip_info in ip_status_list:
+            ip = ip_info.get('ip')
+            status = ip_info.get('status')
+            
+            # Verificar se está online
+            if status == 'online':
+                device = device_map.get(ip, {})
+                online_devices.append({
+                    'ip': ip,
+                    'nome': device.get('descricao', ''),
+                    'descricao': device.get('tipo', '')
+                })
+        
+        return jsonify({
+            'vlan': vlan,
+            'total_online': len(online_devices),
+            'devices': online_devices
+        })
+    
+    except Exception as e:
+        logging.error(f"Erro ao obter dispositivos online da VLAN {vlan}: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# ============================================================
+# API INTERNA - Endpoints do sistema
+# ============================================================
+        
 
 # Define o endpoint principal para a página inicial.
 @app.route('/')  # Rota para rodar localmente.
