@@ -108,8 +108,8 @@ def get_online_devices_by_vlan(vlan):
             ip = ip_info.get('ip')
             status = ip_info.get('status')
             
-            # Verificar se está online
-            if status == 'online':
+            # Verificar se está online (aceita 'on' ou 'online')
+            if status in ['on', 'online']:
                 device = device_map.get(ip, {})
                 online_devices.append({
                     'ip': ip,
