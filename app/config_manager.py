@@ -57,11 +57,6 @@ class ConfigManager:
                     "200": ["Telefone IP", "Gateway SIP", "PBX", "Conversor"],
                     "204": ["Softphone", "Gateway Mobile", "Adaptador ATA", "Roteador"]
                 }
-            },
-            "system_info": {
-                "version": "2.0.0",
-                "last_updated": "",
-                "admin_contact": ""
             }
         }
     
@@ -94,10 +89,6 @@ class ConfigManager:
         """Salva configurações no arquivo"""
         try:
             with self.config_lock:
-                # Atualiza timestamp
-                from datetime import datetime
-                self.config['system_info']['last_updated'] = datetime.now().isoformat()
-                
                 with open(self.config_file, 'w', encoding='utf-8') as f:
                     json.dump(self.config, f, indent=4, ensure_ascii=False)
                 return True

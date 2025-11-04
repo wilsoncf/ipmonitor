@@ -239,28 +239,6 @@
                 </div>
             </section>
 
-            <!-- Seção: Informações do Sistema -->
-            <section class="config-section">
-                <h2>ℹ️ Informações do Sistema</h2>
-                <p class="section-description">Dados gerais e contato administrativo.</p>
-                
-                <div class="config-grid">
-                    <div class="config-item">
-                        <label for="admin_contact">Contato do Administrador:</label>
-                        <input type="email" 
-                               id="admin_contact" 
-                               name="system_info.admin_contact" 
-                               value="{{ config.system_info.admin_contact }}" 
-                               placeholder="admin@exemplo.com">
-                    </div>
-                    
-                    <div class="config-item">
-                        <label>Última Atualização:</label>
-                        <span class="readonly-value">{{ config.system_info.last_updated or 'Nunca' }}</span>
-                    </div>
-                </div>
-            </section>
-
             <!-- Botões de Ação -->
             <div class="action-buttons">
                 <button type="submit" id="save-btn" class="btn-primary">💾 Salvar Configurações</button>
