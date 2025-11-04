@@ -15,12 +15,12 @@ class ConfigManager:
         """Carrega configurações padrão do sistema"""
         return {
             "ping_intervals": {
-                "vlan_70": 12,   # Câmeras - moderada prioridade
-                "vlan_80": 10,   # Alarme - alta prioridade
-                "vlan_85": 8,    # Automação Ethernet - máxima prioridade
-                "vlan_86": 12,   # Automação WiFi - moderada prioridade
-                "vlan_200": 15,  # Telefonia IP Fixa - baixa prioridade
-                "vlan_204": 15   # Telefonia IP Móvel - baixa prioridade
+                "vlan_70": 60,   # Câmeras - moderada prioridade
+                "vlan_80": 60,   # Alarme - alta prioridade
+                "vlan_85": 60,    # Automação Ethernet - máxima prioridade
+                "vlan_86": 60,   # Automação WiFi - moderada prioridade
+                "vlan_200": 60,  # Telefonia IP Fixa - baixa prioridade
+                "vlan_204": 60   # Telefonia IP Móvel - baixa prioridade
             },
             "network_settings": {
                 "ping_timeout": 2,

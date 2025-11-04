@@ -323,7 +323,7 @@ class ConfigManager {
 class ConfigValidators {
     static validatePingInterval(value) {
         const num = parseInt(value);
-        return num >= 5 && num <= 300;
+        return num >= 30 && num <= 360;
     }
     
     static validateTimeout(value) {

@@ -266,7 +266,7 @@ def test_config():
         
         if 'ping_intervals' in data:
             for vlan, interval in data['ping_intervals'].items():
-                if interval < 5 or interval > 300:
+                if interval < 30 or interval > 360:
                     test_results['config_validity'] = False
                 test_results['ping_tests'] += 1
         
@@ -431,7 +431,7 @@ def validate_config_data(data):
         # Validar intervalos de ping
         if 'ping_intervals' in data:
             for vlan, interval in data['ping_intervals'].items():
-                if not isinstance(interval, (int, float)) or interval < 5 or interval > 300:
+                if not isinstance(interval, (int, float)) or interval < 30 or interval > 360:
                     return False
         
         # Validar configurações de rede
